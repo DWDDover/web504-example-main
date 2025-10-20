@@ -1,46 +1,31 @@
 /*
-    Main Application File (app.js)
-
-    This is the entry point and coordinator for our Firebase Image Gallery application
-
-    Responsibilities:
-    1. Initialize the application
-    2. Coordinate between different components
-    3. Manage application state
-    4. Handle Firebase configuration checks
-    5. Provide utility functions for user feedback
-
-    This file demonstrates:
-    - Application architecture and organization
-    - State management without frameworks
-    - Component composition and coordination
-    - Error handling and user feedback
+Declan:
+app.js is the main application file of the web app. It will import functions from the 
+other js modules and coordinate between them. It will also initialize the application on page load
+and manage the application state. On initialization is will check for correct firebase configuration
+and provide feedback or error handling dependant on its success
 */
-
 /*
-    Import all necessary modules
-    We import from both Firebase config and our custom components
+Declan: 
+This section imports functions from the other js modules that will be needed to run the app.
+An improvement for this section could be a consistent format for importing multiple components,
+as it currently exists the firebase config components are multi-line and the image grid components
+are written on one line.
 */
-
 // Firebase configuration and utilities
 import {
     storage,
     isFirebaseConfigured,
     listAllImages
 } from './firebaseConfig.js';
-
 // UI Components
 import { createUploadForm } from '../components/uploadForm.js';
 import { createImageGrid, addImageToGrid, updateImageGrid } from '../components/imageGrid.js';
-
 /*
-    Application State
-
-    This object holds the current state of our application
-    Think of it as the "memory" of the app - it tracks what's currently displayed
-
-    In larger apps, you might use a state management library (Redux, Vuex, etc.)
-    For a simple app like this, a plain object works great
+Declan: 
+The appState object holds the current state of the application using four different properties.
+It can be used to tell us what is the app is currently doing. initially this object is created with an
+empty array and null values as placeholders for the gridElement and uploadFormElement.
 */
 const appState = {
     images: [],              // Array of all images currently loaded
@@ -48,36 +33,37 @@ const appState = {
     gridElement: null,       // Reference to the grid DOM element
     uploadFormElement: null  // Reference to the upload form DOM element
 };
-
 /*
-    Initialize Application
-
-    This function sets up the entire application
-    It's called when the page loads (see bottom of file)
-
-    Steps:
-    1. Check Firebase configuration
-    2. Create and render components
-    3. Load initial data
-    4. Set up event handlers
+Declan: 
+This function initializes the app. it is an asynchronous function allowing the code to execute
+while waiting for information from other functions such as loadAndDisplayImages.
 */
 async function initializeApp() {
     console.log('Initializing Firebase Image Gallery...');
 
-    /*
-        Step 1: Verify Firebase Configuration
-        Before we do anything else, make sure Firebase is properly set up
-        If not, show an error and stop initialization
-    */
+/*
+Declan: 
+This if statements checks that firebase is properly configured using the isFireBaseConfigured function
+imported from firebaseConfig. If firebase is not properly configured it will exit the function and
+display an error to the user
+*/
     if (!isFirebaseConfigured()) {
         showConfigurationError();
         return; // Stop here - can't proceed without Firebase
     }
 
-    /*
-        Step 2: Create and Render Components
-        Build our UI by creating each component and adding it to the page
-    */
+/*
+Declan: 
+This section is for the creation and rendering of the different components. It creates the upload form
+and a variable to store the uploaded container element.
+*/
+/*
+Declan: 
+This section creates an uploadForm variable and uses the constructor function 'createUploadForm' from
+uploadForm.js to assign an object to the variable. The objects properties are in the form of two callbacks
+for functions created further down this page and a storage property that is assigned the 'storage' module 
+import from firebaseConfig.
+*/
     try {
         // Create upload form with callbacks
         const uploadForm = createUploadForm({
@@ -86,20 +72,27 @@ async function initializeApp() {
             storage: storage
         });
 
-        // Add upload form to the page
+/*
+Declan: 
+This creates the upload container variable and assigns it to the element with the id 'upload-container'
+It only does this if that element exists in the DOM
+*/
         const uploadContainer = document.getElementById('upload-container');
         if (uploadContainer) {
             uploadContainer.appendChild(uploadForm);
             appState.uploadFormElement = uploadForm;
             console.log('Upload form created');
         }
-
-        /*
-            Step 3: Load and Display Images
-            Fetch all existing images from Firebase Storage and display them
-        */
+/*
+Declan: 
+The function loadAndDisplayImages is called, found further down this page. the await keyword is used
+so that the function stops executing until the promise is recieved from this function.
+*/
         await loadAndDisplayImages();
-
+/*
+Declan: 
+Upon the success of loading and displaying images a message is logged to the console to inform the user
+*/
         console.log('Application initialized successfully');
 
     } catch (error) {
@@ -117,34 +110,53 @@ async function initializeApp() {
     - After manual refresh (if implemented)
     - Optionally after each upload (we add single images instead for better UX)
 */
+/*
+Declan: 
+This function gets the images from firebase storage and renders them on the page.
+it is called in the above function that runs on DOM load.
+*/
 async function loadAndDisplayImages() {
+    /*
+    Declan: 
+    A message is logged to the console to inform the user that the images are laoding
+    the appState object is updated to reflect the the images are loading my changing the
+    isLoading property to true
+    */
     console.log('Loading images from Firebase...');
 
-    // Set loading state
     appState.isLoading = true;
-
+    /*
+    Declan: 
+    This section fetches all the images from firebase storage using the listAllImages function
+    imported from firebaseConfig. It assigns the images as an
+    array of image objects with a url, a name, and a timestamp to the 'images' variable.
+    the await keyword again pauses the current function until listAllImages executes.
+    */
     try {
-        /*
-            Fetch all images from Firebase Storage
-            listAllImages() is defined in firebaseConfig.js
-            It returns an array of image objects with url, name, timestamp
-        */
         const images = await listAllImages();
-
-        // Update application state
+        /*
+        Declan: 
+        The appState object is updated again, assigning the new image array to the 'images' property
+        and changing the isLoading property back to false to show that it is finished loading.
+        */
         appState.images = images;
         appState.isLoading = false;
 
         /*
-            Create or update the image grid
-            If grid doesn't exist yet, create it
-            If it does exist, update it with new data
+        Declan: 
+        A gridContainer variable is created and assigned to the HTML element with the id 'image-grid-container'
         */
         const gridContainer = document.getElementById('image-grid-container');
-
+        /*
+        Declan: 
+        This section executes if the image-grid-container element does not exist and creates a new grid.
+        It uses the createImageGrid constructor function to create an image grid object and assign it
+        to the gridElement property in the appState object. It also uploads the appState object to reflect
+        that it has finished loading. It then uses the appendChild function to place the new grid element
+        into the image grid container. It then logs to the user whether the image grid was created or updated.
+        */
         if (gridContainer) {
             if (!appState.gridElement) {
-                // First time - create new grid
                 appState.gridElement = createImageGrid({
                     images: images,
                     isLoading: false
@@ -152,17 +164,26 @@ async function loadAndDisplayImages() {
                 gridContainer.appendChild(appState.gridElement);
                 console.log('Image grid created');
             } else {
-                // Grid exists - update it
                 updateImageGrid(appState.gridElement, images);
                 console.log('Image grid updated');
             }
         }
 
-        // Show success message if images were loaded
+        /*
+        Declan: 
+        Upon an image upload a message is displayed to the user telling them how many images were loaded
+        */
         if (images.length > 0) {
             showStatusMessage(`Loaded ${images.length} image(s)`, 'success');
         }
-
+    /*
+    Declan: 
+    If the listAllImages function is unsuccesful the following code will run.
+    The relevant error will be displayed to the user in the console, along with text informing them
+    that the app failed to load images. An image grid element will still be created and the appstates
+    gridElement property will be updated to hold a new imageGrid object with an empty array. This empty image grid
+    will then be placed inside the image-grid-container element so that the UI renders correctly.
+    */
     } catch (error) {
         console.error('Failed to load images:', error);
         appState.isLoading = false;
@@ -181,7 +202,6 @@ async function loadAndDisplayImages() {
         }
     }
 }
-
 /*
     Handle Upload Success
 
@@ -191,36 +211,40 @@ async function loadAndDisplayImages() {
     Parameters:
     - imageData: Object containing { url, name, timestamp, fullPath }
 */
+/*
+Declan: 
+This function is used to handle successful image uploads, it takes the imageData variable as a paramater
+the image data variable is created in imageCard.js and holds url, name, and timestamp properties. The function
+logs a message to the console containing these properties on successful upload.
+*/
 function handleUploadSuccess(imageData) {
     console.log('Upload successful, updating gallery...', imageData);
 
     /*
-        Add the new image to our state
-        We add it at the beginning so newest images appear first
+    Declan: 
+    the unshift() function is used to add the new imageData object to the beginning of the images array,
+    stored in the images property of the appState function.
     */
     appState.images.unshift(imageData);
 
     /*
-        Update the grid with the new image
-        Instead of reloading all images, we just add this one
-        This is more efficient and provides better UX
+    Declan: 
+    If the gridElement property of the appState object exists, the addImageToGrid function imported from imageGrid.js
+    is used to add the new imageData object to the gridElement property of the appState object
     */
     if (appState.gridElement) {
         addImageToGrid(appState.gridElement, imageData);
     }
-
-    // Show success message
+    /*
+    Declan: 
+    Message is deisplayed to the console showing successful upload
+    */
     showStatusMessage('Image uploaded successfully!', 'success');
 }
-
 /*
-    Handle Upload Error
-
-    Called when an upload fails
-    This is passed as a callback to the upload form component
-
-    Parameters:
-    - error: Error object with message
+Declan: 
+This function is used to handle an upload error, the specific error object encountered is passed as a parameter
+into the function in order to display it to the user in the console
 */
 function handleUploadError(error) {
     console.error('Upload failed:', error);
@@ -228,17 +252,10 @@ function handleUploadError(error) {
     // Show error message to user
     showStatusMessage(`Upload failed: ${error.message}`, 'error');
 }
-
 /*
-    Show Status Message
-
-    Displays a temporary message to the user
-    Used for success messages, errors, and info
-
-    Parameters:
-    - message: String to display
-    - type: 'success', 'error', or 'info'
-    - duration: How long to show message (ms), default 5000 (5 seconds)
+Declan: 
+The showStatusMessage function is used to display messages to the user. It takes a message string,
+a type, and a duration as parameters in order to display all the relevant information to the user.
 */
 function showStatusMessage(message, type = 'info', duration = 5000) {
     const statusElement = document.getElementById('status-message');
@@ -247,26 +264,22 @@ function showStatusMessage(message, type = 'info', duration = 5000) {
         console.warn('Status message element not found');
         return;
     }
-
     /*
-        Clear any existing message
-        Remove all type classes first
+    Declan: 
+    Clear the current message, set the new message text and type, and show the message to the user
     */
     statusElement.classList.remove('success', 'error', 'info', 'show');
 
-    // Set the message text
     statusElement.textContent = message;
 
-    // Add the appropriate type class
     statusElement.classList.add(type);
 
-    // Show the message
     statusElement.classList.add('show');
 
-    /*
-        Hide the message after duration
-        clearTimeout prevents multiple timers if function is called rapidly
-    */
+/*
+Declan: 
+Hide the message after the timeout given in the 'duration' parameter
+*/
     if (statusElement.hideTimeout) {
         clearTimeout(statusElement.hideTimeout);
     }
@@ -275,21 +288,33 @@ function showStatusMessage(message, type = 'info', duration = 5000) {
         statusElement.classList.remove('show');
     }, duration);
 }
-
 /*
-    Show Configuration Error
-
-    Displays a helpful error when Firebase is not configured
-    Tells students exactly what they need to do
+Declan: 
+This function is used to display a configuration error in the form of a new element that is added to the DOM.
+This new element contains instrucitons for the user to fix their firebase configuration.
 */
 function showConfigurationError() {
+    /*
+    Declan: 
+    creates a mainContent variable targeting the element with the class main-content
+    */
     const mainContent = document.querySelector('.main-content');
-
+    /*
+    Declan: 
+    if no element with the class main-content exists the funciton ends
+    */
     if (!mainContent) return;
 
     /*
         Create an error message with instructions
         This is more helpful than a generic error
+    */
+   /*
+    Declan: 
+    This section creates a new HTML div element and assigns it to the variable errorContainer.
+    The element contains detailed information explaining to the user some potential fixes for
+    their firebase configuration issues. The element is then appended within the errorContainer
+    element that was created.
     */
     const errorContainer = document.createElement('div');
     errorContainer.className = 'status-message error show';
@@ -314,29 +339,47 @@ function showConfigurationError() {
         </div>
     `;
 
-    // Add to page at the top
+    /*
+    Declan: 
+    the error container is then added to the DOM
+    */
     mainContent.insertBefore(errorContainer, mainContent.firstChild);
 
-    // Hide other sections until configured
+    /*
+    Declan: 
+    The other sections of the page are hidden until the errors are fixed
+    */
     const uploadSection = document.querySelector('.upload-section');
     const gallerySection = document.querySelector('.gallery-section');
-
+    /*
+    Declan: 
+    Improvement:
+    Instead of directly manipulating the style properties of the elements, classlist.add or classlist.toggle
+    could add or remove the 'hidden' class that is already defined as display: none; in our CSS
+    */
     if (uploadSection) uploadSection.style.display = 'none';
     if (gallerySection) gallerySection.style.display = 'none';
 }
-
 /*
-    Refresh Gallery
-
-    Reloads all images from Firebase Storage
-    Useful if images were added/deleted outside this app
-
-    This could be called by a refresh button or automatically on interval
+Declan: 
+The refreshGallery function is used to reload the images from firebase storage in case any changes were made
+directly to them outside of the app. The function can be called automatically on a set interval or triggered on
+page refresh
 */
 async function refreshGallery() {
+    /*
+    Declan: 
+    The user is informed in the console that the gallery is refreshing and more details are given using the
+    showStatusMessage function created earlier
+    */
     console.log('Refreshing gallery...');
     showStatusMessage('Refreshing gallery...', 'info', 2000);
-
+    /*
+    Declan: 
+    The loadAndDisplayImages function is then called, using the await keyword again to pause the refreshGallery
+    function until the promise is recieved. On success the relevant status message is shown. On error the user
+    is also informed in the console with a relevant error message.
+    */
     try {
         await loadAndDisplayImages();
         showStatusMessage('Gallery refreshed', 'success', 2000);
@@ -345,15 +388,10 @@ async function refreshGallery() {
         showStatusMessage('Failed to refresh gallery', 'error');
     }
 }
-
 /*
-    Get Application State
-
-    Helper function that returns current app state
-    Useful for debugging or for extension features
-
-    Usage in browser console:
-    window.appState
+Declan: 
+Get appstate helper function that can be used throughout the app to return the current appState, the amount of images
+in the images array, and the status of the apps firebase configuration
 */
 function getAppState() {
     return {
@@ -362,69 +400,32 @@ function getAppState() {
         isConfigured: isFirebaseConfigured()
     };
 }
-
 /*
-    Expose useful functions to window object
-    Makes them available for:
-    - Debugging in browser console
-    - Extension by students
-    - Integration with other scripts
-
-    Students can open browser console and type:
-    - window.refreshGallery() to manually refresh
-    - window.appState to see current state
+Declan: 
+These functions can be manually called by the user in the console in order to view the app state and refresh the gallery
+USeful for troubleshooting and debugging
 */
 window.refreshGallery = refreshGallery;
 window.appState = getAppState;
-
 /*
-    Application Initialization
-
-    Wait for DOM to be fully loaded before initializing
-    This ensures all HTML elements exist before we try to access them
-
-    DOMContentLoaded fires when HTML is parsed and DOM is ready
-    This happens before images/stylesheets finish loading (faster than 'load' event)
+Declan: 
+On DOM load, the intializeApp function is called to start the app, and a message is displayed to the console.
 */
 document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM loaded, starting initialization...');
     initializeApp();
 });
-
 /*
-    Handle page visibility changes
-    Optionally refresh when user returns to the tab
-
-    This is commented out by default because it may be unnecessary
-    Uncomment if you want auto-refresh behavior
-*/
-/*
-document.addEventListener('visibilitychange', () => {
-    if (!document.hidden && isFirebaseConfigured()) {
-        console.log('Page visible again, checking for updates...');
-        refreshGallery();
-    }
-});
-*/
-
-/*
-    Error Handler for Unhandled Errors
-
-    Catches any errors that slip through
-    Logs them and shows a user-friendly message
-
-    This is a safety net for unexpected errors
+Declan: 
+Handler for unexpected errors, prompting the user to refresh the page and displaying error information.
 */
 window.addEventListener('error', (event) => {
     console.error('Unhandled error:', event.error);
     showStatusMessage('An unexpected error occurred. Please refresh the page.', 'error');
 });
-
 /*
-    Handle Promise Rejections
-
-    Catches any unhandled promise rejections
-    Common with async operations like Firebase calls
+Declan: 
+Handles promise rejections within our async functions, displaying relevant information to the user
 */
 window.addEventListener('unhandledrejection', (event) => {
     console.error('Unhandled promise rejection:', event.reason);
@@ -432,8 +433,8 @@ window.addEventListener('unhandledrejection', (event) => {
 });
 
 /*
-    Export for testing or module usage
-    If you're using this in a test environment, these exports are helpful
+Declan: 
+Export the functions for usage within other modules or for testing purposes
 */
 export {
     initializeApp,
@@ -444,24 +445,3 @@ export {
     refreshGallery,
     getAppState
 };
-
-/*
-    ARCHITECTURE NOTES FOR STUDENTS:
-
-    This file follows the "Coordinator" pattern:
-    - It doesn't contain business logic (that's in components and firebaseConfig)
-    - It doesn't create complex UI (that's in components)
-    - It coordinates between different parts of the app
-    - It manages application-level state
-
-    Benefits of this approach:
-    - Each file has a clear, single responsibility
-    - Components are reusable and testable
-    - Easy to understand flow of data and events
-    - Easy to add new features without breaking existing ones
-
-    As you learn more about web development, you'll encounter frameworks
-    like React, Vue, or Angular that provide more sophisticated ways to
-    handle these same concerns. But the fundamental concepts here
-    (component composition, state management, event handling) remain the same!
-*/
