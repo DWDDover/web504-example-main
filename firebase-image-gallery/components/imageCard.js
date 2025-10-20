@@ -1,55 +1,19 @@
 /*
-    Image Card Component
-    Creates individual image cards for the gallery display
+Declan: a new export function to create an image card that takes 'imageData', an
+empty object, as a parameter.
 
-    This component demonstrates:
-    1. Component-based architecture using factory functions
-    2. Creating DOM elements programmatically with JavaScript
-    3. Handling image loading states
-    4. Accessibility considerations
-*/
-
-/*
-    Factory Function: createImageCard
-
-    A factory function is a function that creates and returns something
-    In this case, it creates a DOM element (an image card)
-
-    Why factory functions?
-    - Simple pattern that beginners can understand
-    - No need for 'this' keyword (which can be confusing)
-    - Easy to test
-    - Clear inputs (parameters) and outputs (DOM element)
-
-    Parameters:
-    - imageData: Object containing url, name, and timestamp
-    - imageData = {}: Default empty object if no data provided
-
-    Returns:
-    - A DOM element (article) ready to be added to the page
 */
 export function createImageCard(imageData = {}) {
-    /*
-        Destructure the imageData object
-        This is ES6 syntax that extracts properties into variables
+/*
+Declan: create an imageData object with the properties url, name, and timestamp. these will be taken from
+another module that imports and calls this function
 
-        Example:
-        const imageData = { url: 'pic.jpg', name: 'photo', timestamp: '123' };
-        const { url, name, timestamp } = imageData;
-        // Now we have: url = 'pic.jpg', name = 'photo', timestamp = '123'
-    */
+*/
     const { url, name, timestamp } = imageData;
+/*
+Declan: create a card variable that holds 
 
-    /*
-        Create the card container
-        We use <article> because each image card is a self-contained piece of content
-        This is semantically correct HTML5
-
-        Semantic HTML benefits:
-        - Better for screen readers (accessibility)
-        - Better for SEO
-        - Makes code more readable
-    */
+*/
     const card = document.createElement('article');
     card.className = 'image-card';
 
