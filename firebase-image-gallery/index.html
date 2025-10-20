@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Firebase Image Gallery - Educational web development project">
+    <title>Firebase Image Gallery</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!--
+        Main Container
+        This wrapper helps us center and constrain the content width
+    -->
+    <div class="container">
+        <!-- Header Section -->
+        <header class="header">
+            <h1>Firebase Image Gallery</h1>
+            <p class="subtitle">Upload and manage your images in the cloud</p>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!--
+                Upload Section
+                This section will contain the upload form component
+                The component will be injected here by JavaScript
+            -->
+            <section class="upload-section" aria-label="Upload Images">
+                <div id="upload-container">
+                    <!-- Upload form component will be injected here -->
+                </div>
+            </section>
+
+            <!--
+                Status Message Area
+                Shows feedback to users (success, error, loading messages)
+            -->
+            <div id="status-message" class="status-message" role="status" aria-live="polite">
+                <!-- Status messages will appear here -->
+            </div>
+
+            <!--
+                Image Gallery Section
+                This section will contain the image grid component
+                The component will be injected here by JavaScript
+            -->
+            <section class="gallery-section" aria-label="Image Gallery">
+                <h2>Your Images</h2>
+                <div id="image-grid-container">
+                    <!-- Image grid component will be injected here -->
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer Section -->
+        <footer class="footer">
+            <p>Built with vanilla JavaScript and Firebase Storage</p>
+            <p class="footer-note">Educational project for web development students</p>
+        </footer>
+    </div>
+
+    <!--
+        JavaScript Module Loading
+        type="module" enables ES6 import/export syntax
+        This is the entry point of our application
+    -->
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>
